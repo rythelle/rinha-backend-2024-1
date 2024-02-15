@@ -1,0 +1,143 @@
+version: '3.5'
+
+services:
+  api1:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: api
+    hostname: api1
+    restart: "on-failure"
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl", "-f", "http://localhost:3002/healthy-check"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 10
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - '80'
+    # volumes:
+    #   - .:/usr/src/app
+    links:
+      - db
+      - redis
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: cake
+      POSTGRES_PASSWORD: cake123
+      POSTGRES_DB: db_cake
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    command: npm run start:prod
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: '0.425GB'
+
+  api2:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: api
+    hostname: api1
+    restart: "on-failure"
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl", "-f", "http://localhost:3003/healthy-check"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 10
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - '80'
+    # volumes:
+    #   - .:/usr/src/app
+    links:
+      - db
+      - redis
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: cake
+      POSTGRES_PASSWORD: cake123
+      POSTGRES_DB: db_cake
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    command: npm run start:prod
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: '0.425GB'
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api1
+      - api2
+    ports:
+      - '9999:9999'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: '0.45GB'
+
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - redis:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: '0.2GB'
+
+  db:
+    image: 'postgres:latest'
+    ports:
+      - '5432:5432'
+    restart: "on-failure"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"
+        ]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_USER: cake
+      POSTGRES_PASSWORD: cake123
+      POSTGRES_DB: db_cake
+    volumes:
+      - ./init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
+    command: postgres -c 'max_connections=6000'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.55'
+          memory: '1.5GB'
+
+volumes:
+  redis:
+    driver: local
