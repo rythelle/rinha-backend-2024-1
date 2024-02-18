@@ -9,7 +9,7 @@
 
 
 ### To do
-- [ ] Implementação básica do Hyper-Express.
+- [x] Implementação básica do Hyper-Express.
 - [ ] Criar todas as rotas do desafio.
 - [ ] Definir qual banco de dados irá usar.
 - [ ] Implementar regras de negócio do desafio.
