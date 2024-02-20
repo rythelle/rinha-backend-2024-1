@@ -2,13 +2,16 @@ import HyperExpress from 'hyper-express';
 import logger from './middlewares/logger.js';
 import router from './router.js';
 
-const server = new HyperExpress.Server();
+// trust_proxy allow application to receive data from proxy
+const server = new HyperExpress.Server({ trust_proxy: true });
 
-server.use('/api/v1', router);
+// Router
+server.use('/', router);
 
+// Middleware
 server.use(logger);
 
 server
-  .listen(3000)
-  .then((socket) => console.log('Webserver started on port 3000'))
-  .catch((error) => console.log('Failed to start webserver on port 3000'));
+  .listen(80)
+  .then((socket) => console.log('Server started on port 80', socket))
+  .catch((error) => console.log('Failed to start server on port 80', error));

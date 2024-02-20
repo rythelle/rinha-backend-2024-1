@@ -1,17 +1,35 @@
 import HyperExpress from 'hyper-express';
+import Transaction from './functions/transaction.js';
 
 const router = new HyperExpress.Router();
 
-router.post('/register', async (request, response) => {
-  return response.send('register post');
+const transaction = new Transaction();
+
+router.post('/clientes/:id/transacoes', async (request, response) => {
+  const { id } = request.path_parameters;
+  const body = await request.json();
+  const { tipo, valor, descricao } = body;
+
+  const limitWithBalanceUpdated = await transaction.create({
+    id,
+    tipo,
+    valor,
+    descricao,
+  });
+
+  console.log('#####', { limitWithBalanceUpdated });
+
+  return response.status(200).send(JSON.stringify(limitWithBalanceUpdated));
 });
 
-router.get('/register', async (request, response) => {
-  return response.send('register get');
-});
+router.get('/clientes/:id/extrato', async (request, response) => {
+  const { id } = request.path_parameters;
 
-router.delete('/register', async (request, response) => {
-  return response.send('register delete');
+  const bankStatement = await transaction.listBankStatement({
+    id,
+  });
+
+  return response.status(200).send(JSON.stringify(bankStatement));
 });
 
 export default router;

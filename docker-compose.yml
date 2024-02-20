@@ -16,24 +16,24 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+      # redis:
+      #   condition: service_healthy
     expose:
       - '80'
     # volumes:
     #   - .:/usr/src/app
     links:
       - db
-      - redis
+      # - redis
     environment:
-      POSTGRES_HOST: db
+      POSTGRES_HOST: localhost
       POSTGRES_USER: cake
       POSTGRES_PASSWORD: cake123
       POSTGRES_DB: db_cake
       POSTGRES_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    command: npm run start:prod
+      # REDIS_HOST: redis
+      # REDIS_PORT: 6379
+    command: npm run start
     deploy:
       resources:
         limits:
@@ -55,24 +55,24 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+      # redis:
+      #   condition: service_healthy
     expose:
       - '80'
     # volumes:
     #   - .:/usr/src/app
     links:
       - db
-      - redis
+      # - redis
     environment:
-      POSTGRES_HOST: db
+      POSTGRES_HOST: localhost
       POSTGRES_USER: cake
       POSTGRES_PASSWORD: cake123
       POSTGRES_DB: db_cake
       POSTGRES_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    command: npm run start:prod
+      # REDIS_HOST: redis
+      # REDIS_PORT: 6379
+    command: npm run start
     deploy:
       resources:
         limits:
@@ -94,22 +94,22 @@ services:
           cpus: '0.3'
           memory: '0.45GB'
 
-  redis:
-    image: redis:latest
-    ports:
-      - '6379:6379'
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 3s
-      timeout: 5s
-      retries: 10
-    volumes:
-      - redis:/data
-    deploy:
-      resources:
-        limits:
-          cpus: '0.05'
-          memory: '0.2GB'
+  # redis:
+  #   image: redis:latest
+  #   ports:
+  #     - '6379:6379'
+  #   healthcheck:
+  #     test: [ "CMD", "redis-cli", "ping" ]
+  #     interval: 3s
+  #     timeout: 5s
+  #     retries: 10
+  #   volumes:
+  #     - redis:/data
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.05'
+  #         memory: '0.2GB'
 
   db:
     image: 'postgres:latest'
@@ -138,6 +138,6 @@ services:
           cpus: '0.55'
           memory: '1.5GB'
 
-volumes:
-  redis:
-    driver: local
+# volumes:
+#   redis:
+#     driver: local

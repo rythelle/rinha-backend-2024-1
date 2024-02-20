@@ -1,9 +1,11 @@
-import { Pool } from 'pg';
+import pg from 'pg';
+
+const { Pool } = pg;
 
 const poolPostgres = new Pool({
-  user: process.env.POSTGRES_USER,
-  host: process.env.POSTGRES_HOST,
   database: process.env.POSTGRES_DB,
+  host: process.env.POSTGRES_HOST,
+  user: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   port: Number(process.env.POSTGRES_PORT),
 });

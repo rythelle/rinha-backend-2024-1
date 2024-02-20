@@ -6,12 +6,14 @@
   "main": "./src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch ./src/server.js"
+    "dev": "node --env-file .env --watch ./src/server.js",
+    "start": "node --env-file .env ./src/server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "CGB Group",
   "license": "ISC",
   "dependencies": {
-    "hyper-express": "^6.14.12"
+    "hyper-express": "^6.14.12",
+    "pg": "^8.11.3"
   }
 }

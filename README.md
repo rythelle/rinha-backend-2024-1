@@ -10,10 +10,18 @@
 
 ### To do
 - [x] Implementação básica do Hyper-Express.
-- [ ] Criar todas as rotas do desafio.
-- [ ] Definir qual banco de dados irá usar.
-- [ ] Implementar regras de negócio do desafio.
+- [x] Criar todas as rotas do desafio.
+- [x] Montar schema do banco de dados.
+- [x] Definir qual banco de dados irá usar (Postregres ou MongoDB).
+- [x] Implementar regras de negócio do desafio (Service ou useCase).
+- [ ] Implementar testes unitários.
 - [ ] Adicionar manipulação de erros conforme o desafio.
 - [ ] Arrumar a infra para rodar a aplicação.
 - [ ] Implementar cluster nodejs.
 - [ ] Implementar cache.
+
+## Como rodar
+- docker compose up -d --build
+- Aplicação fica disponível em http://localhost:9999/
+
+https://github.com/zanfranceschi/rinha-de-backend-2024-q1
