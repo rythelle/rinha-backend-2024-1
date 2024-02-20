@@ -10,7 +10,7 @@ export default class Transaction {
     //   `SELECT * FROM USUARIO WHERE ID = '${id}'`,
     // );
 
-    // if (!user.rows || !user.rows.length === 0 || id === 6) {
+    // if (!user.rows || !user.rows.length === 0) {
     //   throw new Error('User not found');
     // }
 
@@ -92,16 +92,12 @@ export default class Transaction {
   }
 
   async listBankStatement({ id }) {
-    // Melhorar isso, pra não precisar verificar o cliente primeiro
+    // Melhorar isso, precisa verificar no banco ? Se sim, pra não precisar verificar o cliente primeiro
     if (!clients.includes(Number(id))) {
       throw new CustomError(404, 'User not found');
     }
 
-    // if (rowCount === 0 || rows.length === 0 || id === 6) {
-    //   throw new CustomError(404, 'User not found');
-    // }
-
-    const user = await poolPostgres.query(`
+    const { rows } = await poolPostgres.query(`
         SELECT
           *
         FROM USUARIO u
@@ -110,8 +106,6 @@ export default class Transaction {
         ORDER BY CASE WHEN t.realizada_em IS NULL THEN 1 ELSE 0 END, t.realizada_em DESC
         LIMIT 10;
       `);
-
-    const { rowCount, rows } = user;
 
     let transactions = [];
 
@@ -132,7 +126,7 @@ export default class Transaction {
         data_extrato: new Date().toISOString(),
         limite: rows[0].limite,
       },
-      ultimas_transacoes: transactions[0] ? [] : transactions,
+      ultimas_transacoes: !transactions[0] ? [] : transactions,
     };
   }
 }
