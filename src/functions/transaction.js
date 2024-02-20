@@ -2,6 +2,7 @@ import poolPostgres from '../database/pg.js';
 import CustomError from '../utils/customError.js';
 
 const transactionsAllow = ['c', 'd'];
+const clients = [1, 2, 3, 4, 5];
 
 export default class Transaction {
   async create({ id, valor, tipo, descricao }) {
@@ -13,7 +14,7 @@ export default class Transaction {
     //   throw new Error('User not found');
     // }
 
-    if (id === 6) {
+    if (!clients.includes(Number(id))) {
       throw new CustomError(404, 'User not found');
     }
 
@@ -91,34 +92,39 @@ export default class Transaction {
   }
 
   async listBankStatement({ id }) {
+    // Melhorar isso, pra não precisar verificar o cliente primeiro
+    if (!clients.includes(Number(id))) {
+      throw new CustomError(404, 'User not found');
+    }
+
+    // if (rowCount === 0 || rows.length === 0 || id === 6) {
+    //   throw new CustomError(404, 'User not found');
+    // }
+
     const user = await poolPostgres.query(`
-      SELECT
-        *
-      FROM USUARIO u
-      INNER JOIN TRANSACAO t ON t.id_cliente = u.id_cliente
-      WHERE u.id_cliente = ${id}
-      ORDER BY t.realizada_em DESC
-      LIMIT 10;
+        SELECT
+          *
+        FROM USUARIO u
+        LEFT JOIN TRANSACAO t ON t.id_cliente = u.id_cliente
+        WHERE u.id_cliente = ${id}
+        ORDER BY CASE WHEN t.realizada_em IS NULL THEN 1 ELSE 0 END, t.realizada_em DESC
+        LIMIT 10;
       `);
 
     const { rowCount, rows } = user;
 
-    // if (!user.rows || !user.rows.length === 0 || id === 6) {
-    //   throw new Error('User not found');
-    // }
+    let transactions = [];
 
-    if (rowCount === 0 || rows.length === 0 || id === 6) {
-      throw new CustomError(404, 'User not found');
+    if (rows.length > 0) {
+      transactions = rows.map((row) => {
+        return {
+          valor: row.valor,
+          tipo: row.tipo,
+          descricao: row.descricao,
+          realizada_em: row.realizada_em,
+        };
+      });
     }
-
-    const transactions = rows.map((row) => {
-      return {
-        valor: row.valor,
-        tipo: row.tipo,
-        descricao: row.descricao,
-        realizada_em: row.realizada_em,
-      };
-    });
 
     return {
       saldo: {
@@ -126,7 +132,7 @@ export default class Transaction {
         data_extrato: new Date().toISOString(),
         limite: rows[0].limite,
       },
-      ultimas_transacoes: transactions,
+      ultimas_transacoes: transactions[0] ? [] : transactions,
     };
   }
 }

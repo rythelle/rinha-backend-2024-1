@@ -1,5 +1,5 @@
 import HyperExpress from 'hyper-express';
-import logger from './middlewares/logger.js';
+// import logger from './middlewares/logger.js';
 import router from './router.js';
 
 // trust_proxy allow application to receive data from proxy
@@ -9,7 +9,7 @@ const server = new HyperExpress.Server({ trust_proxy: true });
 server.use('/', router);
 
 // Middleware
-server.use(logger);
+// server.use(logger);
 
 server
   .listen(80)

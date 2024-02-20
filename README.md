@@ -16,9 +16,12 @@
 - [x] Implementar regras de negócio do desafio (Service ou useCase).
 - [ ] Implementar testes unitários.
 - [ ] Adicionar manipulação de erros conforme o desafio.
-- [ ] Arrumar a infra para rodar a aplicação.
+- [x] Arrumar a infra para rodar a aplicação.
 - [ ] Implementar cluster nodejs.
-- [ ] Implementar cache.
+- [ ] Implementar cache ???.
+- [ ] Melhorar query do banco.
+- [ ] Otimizar aplicação.
+- [ ] Configurar limites de memória e cpu.
 
 ## Como rodar
 - docker compose up -d --build

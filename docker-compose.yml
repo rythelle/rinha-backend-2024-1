@@ -26,10 +26,10 @@ services:
       - db
       # - redis
     environment:
-      POSTGRES_HOST: localhost
+      POSTGRES_HOST: db
+      POSTGRES_DB: db_cake
       POSTGRES_USER: cake
       POSTGRES_PASSWORD: cake123
-      POSTGRES_DB: db_cake
       POSTGRES_PORT: 5432
       # REDIS_HOST: redis
       # REDIS_PORT: 6379
@@ -65,7 +65,7 @@ services:
       - db
       # - redis
     environment:
-      POSTGRES_HOST: localhost
+      POSTGRES_HOST: db
       POSTGRES_USER: cake
       POSTGRES_PASSWORD: cake123
       POSTGRES_DB: db_cake
