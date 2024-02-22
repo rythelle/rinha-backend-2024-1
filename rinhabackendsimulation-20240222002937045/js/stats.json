@@ -1,0 +1,333 @@
+{
+  "type": "GROUP",
+"name": "All Requests",
+"path": "",
+"pathFormatted": "group_missing-name-b06d1",
+"stats": {
+    "name": "All Requests",
+    "numberOfRequests": {
+        "total": 68420,
+        "ok": 0,
+        "ko": 68420
+    },
+    "minResponseTime": {
+        "total": 0,
+        "ok": 0,
+        "ko": 0
+    },
+    "maxResponseTime": {
+        "total": 35119,
+        "ok": 0,
+        "ko": 35119
+    },
+    "meanResponseTime": {
+        "total": 2867,
+        "ok": 0,
+        "ko": 2867
+    },
+    "standardDeviation": {
+        "total": 4465,
+        "ok": 0,
+        "ko": 4465
+    },
+    "percentiles1": {
+        "total": 1094,
+        "ok": 0,
+        "ko": 1094
+    },
+    "percentiles2": {
+        "total": 4844,
+        "ok": 0,
+        "ko": 4848
+    },
+    "percentiles3": {
+        "total": 8957,
+        "ok": 0,
+        "ko": 8956
+    },
+    "percentiles4": {
+        "total": 18691,
+        "ok": 0,
+        "ko": 18691
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "htmlName": "t < 800 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group2": {
+    "name": "800 ms <= t < 1200 ms",
+    "htmlName": "t >= 800 ms <br> t < 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group3": {
+    "name": "t >= 1200 ms",
+    "htmlName": "t >= 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group4": {
+    "name": "failed",
+    "htmlName": "failed",
+    "count": 68420,
+    "percentage": 100
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 318.2325581395349,
+        "ok": 0,
+        "ko": 318.2325581395349
+    }
+},
+"contents": {
+"req_criac-a-o-ce502": {
+        "type": "REQUEST",
+        "name": "criação",
+"path": "criação",
+"pathFormatted": "req_criac-a-o-ce502",
+"stats": {
+    "name": "criação",
+    "numberOfRequests": {
+        "total": 54640,
+        "ok": 0,
+        "ko": 54640
+    },
+    "minResponseTime": {
+        "total": 0,
+        "ok": 0,
+        "ko": 0
+    },
+    "maxResponseTime": {
+        "total": 35119,
+        "ok": 0,
+        "ko": 35119
+    },
+    "meanResponseTime": {
+        "total": 2903,
+        "ok": 0,
+        "ko": 2903
+    },
+    "standardDeviation": {
+        "total": 4480,
+        "ok": 0,
+        "ko": 4480
+    },
+    "percentiles1": {
+        "total": 1156,
+        "ok": 0,
+        "ko": 1156
+    },
+    "percentiles2": {
+        "total": 4937,
+        "ok": 0,
+        "ko": 4932
+    },
+    "percentiles3": {
+        "total": 8979,
+        "ok": 0,
+        "ko": 8978
+    },
+    "percentiles4": {
+        "total": 20373,
+        "ok": 0,
+        "ko": 20373
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "htmlName": "t < 800 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group2": {
+    "name": "800 ms <= t < 1200 ms",
+    "htmlName": "t >= 800 ms <br> t < 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group3": {
+    "name": "t >= 1200 ms",
+    "htmlName": "t >= 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group4": {
+    "name": "failed",
+    "htmlName": "failed",
+    "count": 54640,
+    "percentage": 100
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 254.13953488372093,
+        "ok": 0,
+        "ko": 254.13953488372093
+    }
+}
+    },"req_busca-inva-lida-b5618": {
+        "type": "REQUEST",
+        "name": "busca inválida",
+"path": "busca inválida",
+"pathFormatted": "req_busca-inva-lida-b5618",
+"stats": {
+    "name": "busca inválida",
+    "numberOfRequests": {
+        "total": 4190,
+        "ok": 0,
+        "ko": 4190
+    },
+    "minResponseTime": {
+        "total": 0,
+        "ok": 0,
+        "ko": 0
+    },
+    "maxResponseTime": {
+        "total": 35072,
+        "ok": 0,
+        "ko": 35072
+    },
+    "meanResponseTime": {
+        "total": 2645,
+        "ok": 0,
+        "ko": 2645
+    },
+    "standardDeviation": {
+        "total": 4511,
+        "ok": 0,
+        "ko": 4511
+    },
+    "percentiles1": {
+        "total": 632,
+        "ok": 0,
+        "ko": 632
+    },
+    "percentiles2": {
+        "total": 4366,
+        "ok": 0,
+        "ko": 4366
+    },
+    "percentiles3": {
+        "total": 8835,
+        "ok": 0,
+        "ko": 8835
+    },
+    "percentiles4": {
+        "total": 32028,
+        "ok": 0,
+        "ko": 32028
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "htmlName": "t < 800 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group2": {
+    "name": "800 ms <= t < 1200 ms",
+    "htmlName": "t >= 800 ms <br> t < 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group3": {
+    "name": "t >= 1200 ms",
+    "htmlName": "t >= 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group4": {
+    "name": "failed",
+    "htmlName": "failed",
+    "count": 4190,
+    "percentage": 100
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 19.488372093023255,
+        "ok": 0,
+        "ko": 19.488372093023255
+    }
+}
+    },"req_busca-va-lida-d7f0d": {
+        "type": "REQUEST",
+        "name": "busca válida",
+"path": "busca válida",
+"pathFormatted": "req_busca-va-lida-d7f0d",
+"stats": {
+    "name": "busca válida",
+    "numberOfRequests": {
+        "total": 9590,
+        "ok": 0,
+        "ko": 9590
+    },
+    "minResponseTime": {
+        "total": 0,
+        "ok": 0,
+        "ko": 0
+    },
+    "maxResponseTime": {
+        "total": 34982,
+        "ok": 0,
+        "ko": 34982
+    },
+    "meanResponseTime": {
+        "total": 2762,
+        "ok": 0,
+        "ko": 2762
+    },
+    "standardDeviation": {
+        "total": 4357,
+        "ok": 0,
+        "ko": 4357
+    },
+    "percentiles1": {
+        "total": 954,
+        "ok": 0,
+        "ko": 954
+    },
+    "percentiles2": {
+        "total": 4670,
+        "ok": 0,
+        "ko": 4671
+    },
+    "percentiles3": {
+        "total": 8904,
+        "ok": 0,
+        "ko": 8904
+    },
+    "percentiles4": {
+        "total": 17260,
+        "ok": 0,
+        "ko": 17260
+    },
+    "group1": {
+    "name": "t < 800 ms",
+    "htmlName": "t < 800 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group2": {
+    "name": "800 ms <= t < 1200 ms",
+    "htmlName": "t >= 800 ms <br> t < 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group3": {
+    "name": "t >= 1200 ms",
+    "htmlName": "t >= 1200 ms",
+    "count": 0,
+    "percentage": 0
+},
+    "group4": {
+    "name": "failed",
+    "htmlName": "failed",
+    "count": 9590,
+    "percentage": 100
+},
+    "meanNumberOfRequestsPerSecond": {
+        "total": 44.604651162790695,
+        "ok": 0,
+        "ko": 44.604651162790695
+    }
+}
+    }
+}
+
+}
