@@ -37,8 +37,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.3'
-          memory: '0.425GB'
+          cpus: '0.1'
+          memory: '50MB'
 
   api2:
     build:
@@ -76,8 +76,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.3'
-          memory: '0.425GB'
+          cpus: '0.1'
+          memory: '50MB'
 
   nginx:
     image: nginx:latest
@@ -91,8 +91,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.3'
-          memory: '0.45GB'
+          cpus: '0.6'
+          memory: '100MB'
 
   # redis:
   #   image: redis:latest
@@ -135,8 +135,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.55'
-          memory: '1.5GB'
+          cpus: '0.7'
+          memory: '300MB'
 
 # volumes:
 #   redis:

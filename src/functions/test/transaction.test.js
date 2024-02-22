@@ -185,3 +185,13 @@ test('Should not be list bank statements when user not found', async () => {
     }),
   ).rejects.toThrow('User not found');
 });
+
+test('Should not be create a new transaction when there is not param required', async () => {
+  await expect(
+    transaction.create({
+      tipo: 'd',
+      valor: 3000,
+      descricao: 'description 3',
+    }),
+  ).rejects.toThrow('All params is required');
+});

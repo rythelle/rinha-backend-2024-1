@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "type": "module",
   "description": "CGB Group for rinha-backend-2024-1",
-  "main": "./src/server.js",
+  "main": "./src/cluster.js",
   "scripts": {
     "test": "vitest run",
     "test:verbose": "vitest run --reporter=verbose",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "dev": "docker compose -f docker-compose-local.yml down && docker compose -f docker-compose-local.yml up -d --build && node --env-file .env --watch ./src/server.js",
-    "start": "node --env-file .env ./src/server.js"
+    "start": "node ./src/cluster.js"
   },
   "keywords": [],
   "author": "CGB Group",

@@ -19,6 +19,18 @@ export default class Transaction {
       //   throw new Error('User not found');
       // }
 
+      console.log('111', { id, valor, tipo, descricao });
+
+      // Arrumar validação do id
+
+      if ([id, valor].some((value) => !Number.isInteger(value) && value >= 0)) {
+        throw new CustomError(400, 'Type of valor or id is invalid');
+      }
+
+      if ([tipo, descricao].some((value) => !typeof value === 'string')) {
+        throw new CustomError(400, 'Type of tipo or descricao is invalid');
+      }
+
       if ([id, valor, tipo, descricao].some((value) => !value)) {
         throw new CustomError(400, 'All params is required');
       }
