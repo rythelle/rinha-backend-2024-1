@@ -54,3 +54,8 @@ https://vitest.dev/guide/
 https://medium.com/thefreshwrites/advisory-locks-in-postgres-1f993647d061
 http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_http_version
 https://medium.com/@soulaimaneyh/nginx-internal-architecture-b94b013bc365
+
+
+## Run only app in docker
+- docker build -t api-rinha .
+- docker run api-rinha

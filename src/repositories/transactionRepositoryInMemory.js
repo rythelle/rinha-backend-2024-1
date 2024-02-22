@@ -55,54 +55,6 @@ export default class TransactionRepositoryInMemory {
     });
   }
 
-  // async createCreditTransaction({ id, valor, tipo, descricao }) {
-  //   const user = users.rows.find(({ id_cliente }) => Number(id) === id_cliente);
-
-  //   const newBalance = user.saldo + valor;
-
-  //   user.saldo = newBalance;
-
-  //   transactionsDone.push({
-  //     id: (initialIdTransaction += 1),
-  //     realizada_em: new Date().toISOString(),
-  //     tipo,
-  //     descricao,
-  //     valor,
-  //     id_cliente: Number(id),
-  //   });
-
-  //   return {
-  //     limite: user.limite,
-  //     saldo: newBalance,
-  //   };
-  // }
-
-  // async createDebitTransaction({ id, valor, tipo, descricao }) {
-  //   const user = users.rows.find(({ id_cliente }) => Number(id) === id_cliente);
-
-  //   const newBalance = user.saldo - valor;
-
-  //   if (user.limite + newBalance < 0) {
-  //     throw new CustomError(422, 'This operation is not allow');
-  //   }
-
-  //   user.saldo = newBalance;
-
-  //   transactionsDone.push({
-  //     id: (initialIdTransaction += 1),
-  //     realizada_em: new Date().toISOString(),
-  //     tipo,
-  //     descricao,
-  //     valor,
-  //     id_cliente: Number(id),
-  //   });
-
-  //   return {
-  //     limite: user.limite,
-  //     saldo: newBalance,
-  //   };
-  // }
-
   async listBankStatement({ id }) {
     const user = users.rows.find(({ id_cliente }) => Number(id) === id_cliente);
 
@@ -126,13 +78,22 @@ export default class TransactionRepositoryInMemory {
 
     userTransactions.slice(0, 10);
 
-    return userTransactions.map((transaction) => {
-      return {
-        ...transaction,
+    if (userTransactions.length > 0) {
+      return userTransactions.map((transaction) => {
+        return {
+          ...transaction,
+          saldo: user.saldo,
+          limite: user.limite,
+        };
+      });
+    }
+
+    return [
+      {
         saldo: user.saldo,
         limite: user.limite,
-      };
-    });
+      },
+    ];
   }
 
   // Do not used

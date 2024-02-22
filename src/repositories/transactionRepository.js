@@ -1,41 +1,29 @@
 export default class TransactionRepository {
   async selectUser({ client, id }) {
-    await client.query('BEGIN TRANSACTION;');
+    await client.query('BEGIN TRANSACTION');
 
-    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;');
+    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
 
     const { rows } = await client.query(
       `SELECT * FROM USUARIO WHERE id_cliente = ${id} FOR UPDATE;`,
     );
 
-    // await client.query('COMMIT;');
-
     return rows[0];
   }
 
   async updateBalance({ client, id, newBalance }) {
-    // await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;');
-
-    // await client.query('BEGIN TRANSACTION;');
-
-    await client.query(
+    return client.query(
       `UPDATE USUARIO SET saldo = ${newBalance} WHERE id_cliente = ${id};`,
     );
-
-    // return client.query('COMMIT;');
   }
 
   async insertTransaction({ client, id, valor, tipo, descricao }) {
-    // await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;');
-
-    // await client.query('BEGIN TRANSACTION;');
-
     // Send to a queue for further processing ???
     await client.query(
       `INSERT INTO TRANSACAO (tipo, descricao, valor, id_cliente) VALUES ('${tipo}', '${descricao}', ${valor}, ${id});`,
     );
 
-    return client.query('COMMIT;');
+    return client.query('COMMIT');
   }
 
   async listBankStatement({ client, id }) {

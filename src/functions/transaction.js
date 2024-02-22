@@ -19,23 +19,30 @@ export default class Transaction {
       //   throw new Error('User not found');
       // }
 
-      console.log('111', { id, valor, tipo, descricao });
-
-      // Arrumar validação do id
-
-      if ([id, valor].some((value) => !Number.isInteger(value) && value >= 0)) {
-        throw new CustomError(400, 'Type of valor or id is invalid');
-      }
-
-      if ([tipo, descricao].some((value) => !typeof value === 'string')) {
-        throw new CustomError(400, 'Type of tipo or descricao is invalid');
-      }
-
       if ([id, valor, tipo, descricao].some((value) => !value)) {
         throw new CustomError(400, 'All params is required');
       }
 
-      if (!clients.includes(Number(id))) {
+      const clientId = Number(id);
+      const value = Number(valor);
+
+      if (Number.isNaN(clientId)) {
+        throw new CustomError(400, 'Type of id is invalid');
+      }
+
+      if (Number.isNaN(value) || !Number.isInteger(value)) {
+        throw new CustomError(400, 'Type of valor is invalid');
+      }
+
+      if (value < 0) {
+        throw new CustomError(400, 'Input of valor is invalid');
+      }
+
+      if ([tipo, descricao].some((value) => typeof value !== 'string')) {
+        throw new CustomError(400, 'Type of tipo or descricao is invalid');
+      }
+
+      if (!clients.includes(clientId)) {
         throw new CustomError(404, 'User not found');
       }
 
@@ -45,16 +52,20 @@ export default class Transaction {
 
       // Credit operation
       if (tipo === 'c') {
-        const user = await this.repository.selectUser({ client, id });
+        const user = await this.repository.selectUser({ client, id: clientId });
 
-        const newBalance = user.saldo + valor;
+        const newBalance = user.saldo + value;
 
-        await this.repository.updateBalance({ client, id, newBalance });
+        await this.repository.updateBalance({
+          client,
+          id: clientId,
+          newBalance,
+        });
 
         await this.repository.insertTransaction({
           client,
-          id,
-          valor,
+          id: clientId,
+          valor: value,
           tipo,
           descricao,
         });
@@ -66,20 +77,20 @@ export default class Transaction {
       }
 
       // Debit operation
-      const user = await this.repository.selectUser({ client, id });
+      const user = await this.repository.selectUser({ client, id: clientId });
 
-      const newBalance = user.saldo - valor;
+      const newBalance = user.saldo - value;
 
       if (user.limite + newBalance < 0) {
         throw new CustomError(422, 'This operation is not allow');
       }
 
-      await this.repository.updateBalance({ client, id, newBalance });
+      await this.repository.updateBalance({ client, id: clientId, newBalance });
 
       await this.repository.insertTransaction({
         client,
-        id,
-        valor,
+        id: clientId,
+        valor: value,
         tipo,
         descricao,
       });
@@ -100,15 +111,21 @@ export default class Transaction {
   async listBankStatement({ id }) {
     const client = await poolPostgres.connect();
 
-    // To improve this, do you need to check at the bank? If yes, so as not to need to verify the client first
-    if (!clients.includes(Number(id))) {
-      throw new CustomError(404, 'User not found');
-    }
-
     try {
+      const clientId = Number(id);
+
+      if (Number.isNaN(clientId)) {
+        throw new CustomError(400, 'Type of id is invalid');
+      }
+
+      // To improve this, do you need to check at the bank? If yes, so as not to need to verify the client first
+      if (!clients.includes(clientId)) {
+        throw new CustomError(404, 'User not found');
+      }
+
       const userTransactions = await this.repository.listBankStatement({
         client,
-        id,
+        id: clientId,
       });
 
       let transactions = [];
@@ -137,7 +154,10 @@ export default class Transaction {
         ultimas_transacoes: !transactions[0] ? [] : transactions,
       };
     } catch (error) {
-      throw new CustomError(500, 'Internal Server Error');
+      throw new CustomError(
+        error.statusCode || 500,
+        error.message || 'Internal Server Error',
+      );
     } finally {
       client.release();
     }

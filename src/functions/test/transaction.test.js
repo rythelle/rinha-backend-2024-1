@@ -112,6 +112,21 @@ test('Should not be create new transaction when type of operation is not allow',
   ).rejects.toThrow('Type of operation not allow');
 });
 
+test('List bank statements when there is no history of last transactions', async () => {
+  const response = await transaction.listBankStatement({
+    id: 5,
+  });
+
+  expect(response).toStrictEqual({
+    saldo: {
+      data_extrato: expect.anything(),
+      limite: 500000,
+      total: 0,
+    },
+    ultimas_transacoes: [],
+  });
+});
+
 test('List bank statements', async () => {
   vi.useFakeTimers();
 
@@ -186,12 +201,64 @@ test('Should not be list bank statements when user not found', async () => {
   ).rejects.toThrow('User not found');
 });
 
-test('Should not be create a new transaction when there is not param required', async () => {
+test('Should not be create a new transaction when there is param required', async () => {
   await expect(
     transaction.create({
+      id: 5,
       tipo: 'd',
-      valor: 3000,
-      descricao: 'description 3',
+      descricao: 'description 1',
     }),
   ).rejects.toThrow('All params is required');
+});
+
+test('Should not be create a new transaction when id param is NaN', async () => {
+  await expect(
+    transaction.create({
+      id: 'abc',
+      tipo: 'd',
+      valor: 3000,
+      descricao: 'description 1',
+    }),
+  ).rejects.toThrow('Type of id is invalid');
+});
+
+test('Should not be create a new transaction when valor param is NaN', async () => {
+  await expect(
+    transaction.create({
+      id: 1,
+      tipo: 'd',
+      valor: 'abc',
+      descricao: 'description 1',
+    }),
+  ).rejects.toThrow('Type of valor is invalid');
+});
+
+test('Should not be create a new transaction when valor param is negative', async () => {
+  await expect(
+    transaction.create({
+      id: 1,
+      tipo: 'd',
+      valor: -1000,
+      descricao: 'description 1',
+    }),
+  ).rejects.toThrow('Input of valor is invalid');
+});
+
+test('Should not be create a new transaction when tipo or descricao is not a string', async () => {
+  await expect(
+    transaction.create({
+      id: 1,
+      tipo: 'd',
+      valor: 1000,
+      descricao: 123,
+    }),
+  ).rejects.toThrow('Type of tipo or descricao is invalid');
+});
+
+test('Should not be list bank statements when id param is NaN', async () => {
+  await expect(
+    transaction.listBankStatement({
+      id: 'abc',
+    }),
+  ).rejects.toThrow('Type of id is invalid');
 });
