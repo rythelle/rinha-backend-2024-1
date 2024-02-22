@@ -10,12 +10,4 @@ const poolPostgres = new Pool({
   port: Number(process.env.POSTGRES_PORT),
 });
 
-// const poolPostgres = new Pool({
-//   user: 'cake',
-//   host: 'localhost',
-//   database: 'db_cake',
-//   password: 'cake123',
-//   port: 5432,
-// });
-
 export default poolPostgres;

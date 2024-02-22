@@ -1,9 +1,11 @@
 import HyperExpress from 'hyper-express';
 import Transaction from './functions/transaction.js';
+import TransactionRepository from './repositories/transactionRepository.js';
 
 const router = new HyperExpress.Router();
 
-const transaction = new Transaction();
+const repository = new TransactionRepository();
+const transaction = new Transaction(repository);
 
 router.post('/clientes/:id/transacoes', async (request, response) => {
   try {

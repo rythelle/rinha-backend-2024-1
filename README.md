@@ -15,7 +15,7 @@
 - [x] Montar schema do banco de dados.
 - [x] Definir qual banco de dados irá usar (Postregres ou MongoDB).
 - [x] Implementar regras de negócio do desafio (Service ou useCase).
-- [ ] Implementar testes unitários.
+- [x] Implementar testes unitários (Falta um caso de teste, linha 124).
 - [ ] Adicionar manipulação de erros conforme o desafio.
 - [x] Arrumar a infra para rodar a aplicação.
 - [ ] Implementar cluster nodejs.

@@ -5,128 +5,129 @@ const transactionsAllow = ['c', 'd'];
 const clients = [1, 2, 3, 4, 5];
 
 export default class Transaction {
+  constructor(repository) {
+    this.repository = repository;
+  }
+
   async create({ id, valor, tipo, descricao }) {
-    // const user = await poolPostgres.query(
-    //   `SELECT * FROM USUARIO WHERE ID = '${id}'`,
-    // );
-
-    // if (!user.rows || !user.rows.length === 0) {
-    //   throw new Error('User not found');
-    // }
-
-    if (!clients.includes(Number(id))) {
-      throw new CustomError(404, 'User not found');
-    }
-
-    if (!transactionsAllow.includes(tipo)) {
-      throw new CustomError(400, 'Type of operation not allow');
-    }
+    const client = await poolPostgres.connect();
 
     try {
+      // const { exist } = await this.repository.findUser(id);
+
+      // if (!exist) {
+      //   throw new Error('User not found');
+      // }
+
+      if ([id, valor, tipo, descricao].some((value) => !value)) {
+        throw new CustomError(400, 'All params is required');
+      }
+
+      if (!clients.includes(Number(id))) {
+        throw new CustomError(404, 'User not found');
+      }
+
+      if (!transactionsAllow.includes(tipo)) {
+        throw new CustomError(400, 'Type of operation not allow');
+      }
+
       // Credit operation
       if (tipo === 'c') {
-        await poolPostgres.query(
-          'SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;',
-        );
+        const user = await this.repository.selectUser({ client, id });
 
-        await poolPostgres.query('BEGIN TRANSACTION;');
+        const newBalance = user.saldo + valor;
 
-        const { rows } = await poolPostgres.query(
-          `SELECT * FROM USUARIO WHERE id_cliente = ${id} FOR UPDATE;`,
-        );
+        await this.repository.updateBalance({ client, id, newBalance });
 
-        const newBalance = rows[0].saldo + valor;
-
-        await poolPostgres.query(
-          `UPDATE USUARIO SET saldo = ${newBalance} WHERE id_cliente = ${id};`,
-        );
-
-        // Enviar para uma fila para processamento posterior
-        await poolPostgres.query(
-          `INSERT INTO TRANSACAO (tipo, descricao, valor, id_cliente) VALUES ('${tipo}', '${descricao}', ${valor}, ${id});`,
-        );
-
-        await poolPostgres.query('COMMIT;');
+        await this.repository.insertTransaction({
+          client,
+          id,
+          valor,
+          tipo,
+          descricao,
+        });
 
         return {
-          limite: rows[0].limite,
+          limite: user.limite,
           saldo: newBalance,
         };
       }
 
       // Debit operation
-      await poolPostgres.query(
-        'SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;',
-      );
+      const user = await this.repository.selectUser({ client, id });
 
-      await poolPostgres.query('BEGIN TRANSACTION;');
+      const newBalance = user.saldo - valor;
 
-      const { rows } = await poolPostgres.query(
-        `SELECT * FROM USUARIO WHERE id_cliente = ${id} FOR UPDATE;`,
-      );
-
-      const newBalance = rows[0].saldo - valor;
-
-      if (rows[0].limite + newBalance < 0) {
+      if (user.limite + newBalance < 0) {
         throw new CustomError(422, 'This operation is not allow');
       }
 
-      await poolPostgres.query(
-        `UPDATE USUARIO SET saldo = ${newBalance} WHERE id_cliente = ${id};`,
-      );
+      await this.repository.updateBalance({ client, id, newBalance });
 
-      // Enviar para uma fila para processamento posterior
-      await poolPostgres.query(
-        `INSERT INTO TRANSACAO (tipo, descricao, valor, id_cliente) VALUES ('${tipo}', '${descricao}', ${valor}, ${id}) RETURNING *;`,
-      );
-
-      await poolPostgres.query('COMMIT;');
+      await this.repository.insertTransaction({
+        client,
+        id,
+        valor,
+        tipo,
+        descricao,
+      });
 
       return {
-        limite: rows[0].limite,
+        limite: user.limite,
         saldo: newBalance,
       };
     } catch (error) {
-      throw new CustomError(500, error.message);
+      await client.query('ROLLBACK');
+
+      throw new CustomError(error.statusCode, error.message);
+    } finally {
+      client.release();
     }
   }
 
   async listBankStatement({ id }) {
-    // Melhorar isso, precisa verificar no banco ? Se sim, pra não precisar verificar o cliente primeiro
+    const client = await poolPostgres.connect();
+
+    // To improve this, do you need to check at the bank? If yes, so as not to need to verify the client first
     if (!clients.includes(Number(id))) {
       throw new CustomError(404, 'User not found');
     }
 
-    const { rows } = await poolPostgres.query(`
-        SELECT
-          *
-        FROM USUARIO u
-        LEFT JOIN TRANSACAO t ON t.id_cliente = u.id_cliente
-        WHERE u.id_cliente = ${id}
-        ORDER BY CASE WHEN t.realizada_em IS NULL THEN 1 ELSE 0 END, t.realizada_em DESC
-        LIMIT 10;
-      `);
-
-    let transactions = [];
-
-    if (rows.length > 0) {
-      transactions = rows.map((row) => {
-        return {
-          valor: row.valor,
-          tipo: row.tipo,
-          descricao: row.descricao,
-          realizada_em: row.realizada_em,
-        };
+    try {
+      const userTransactions = await this.repository.listBankStatement({
+        client,
+        id,
       });
-    }
 
-    return {
-      saldo: {
-        total: rows[0].saldo,
-        data_extrato: new Date().toISOString(),
-        limite: rows[0].limite,
-      },
-      ultimas_transacoes: !transactions[0] ? [] : transactions,
-    };
+      let transactions = [];
+
+      if (userTransactions.length > 0) {
+        transactions = userTransactions.map(
+          ({ valor, tipo, descricao, realizada_em }) => {
+            if (!valor || !tipo || !descricao || !realizada_em) return;
+
+            return {
+              valor: valor ?? valor,
+              tipo: tipo ?? tipo,
+              descricao: descricao ?? descricao,
+              realizada_em: realizada_em ?? realizada_em,
+            };
+          },
+        );
+      }
+
+      return {
+        saldo: {
+          total: userTransactions[0].saldo,
+          data_extrato: new Date().toISOString(),
+          limite: userTransactions[0].limite,
+        },
+        ultimas_transacoes: !transactions[0] ? [] : transactions,
+      };
+    } catch (error) {
+      throw new CustomError(500, 'Internal Server Error');
+    } finally {
+      client.release();
+    }
   }
 }
