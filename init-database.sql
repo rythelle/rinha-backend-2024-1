@@ -54,14 +54,20 @@ CREATE OR REPLACE FUNCTION processar_transacao(
     p_valor INTEGER,
     p_descricao VARCHAR(10),
     p_id_transacao_pendente INTEGER
-) RETURNS VOID
+) returns void
 LANGUAGE plpgsql
-AS $function$
+as $function$
 DECLARE
     v_saldo_atual INTEGER;
     v_cliente_existe BOOLEAN;
     v_limite INTEGER;
-BEGIN
+    v_data VARCHAR(50);
+   	v_teste_lock BOOLEAN;
+begin
+	--select true into v_teste_lock  from PROCESSANDO where id_cliente = p_id_cliente for UPDATE;
+	select timeofday() into v_data; 
+	RAISE NOTICE '-------------------- Inicio %',v_data;
+	RAISE NOTICE 'p_id_clienteCliente: %, p_tipo: %, p_valor: %, p_descricao: %, p_id_transacao_pendente: %', p_id_cliente, p_tipo, p_valor, p_descricao, p_id_transacao_pendente;
     -- Obter o saldo atual do usuário
     SELECT saldo, limite INTO v_saldo_atual, v_limite FROM USUARIO WHERE id_cliente = p_id_cliente;
     -- TODO: parei aqui! por algum motivo da erro no saldo
@@ -101,6 +107,8 @@ BEGIN
    	INSERT INTO RESULTADO (id,informacao) VALUES (p_id_transacao_pendente,'200');
     
     -- Atualizar o status em_processamento na tabela PROCESSANDO
+   -- executando duas vezes por causa disso aqui embaixo
+
     UPDATE PROCESSANDO SET em_processamento = FALSE WHERE id_cliente = p_id_cliente;
 END;
 $function$;
@@ -108,7 +116,6 @@ $function$;
 -- Função para criar a transação pendente
 -- Irá usar o ID dessa transação pendente como ID do resultado
 CREATE OR REPLACE FUNCTION criar_transacao_pendente(
-    p_id INTEGER,
     p_tipo VARCHAR(1),
     p_descricao VARCHAR(10),
     p_valor INTEGER,
@@ -126,7 +133,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Função para pesquisar na tabela TRANSACAO_PENDENTE e executar processar_transacao
 CREATE OR REPLACE FUNCTION processar_transacao_pendente()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -140,25 +146,75 @@ BEGIN
     -- Obter o id_cliente da tabela PROCESSANDO
     v_id_cliente := NEW.id_cliente;
 
-    -- Pesquisar o menor ID na tabela TRANSACAO_PENDENTE para o mesmo id_cliente
-    SELECT id, tipo, descricao, valor
-    INTO v_menor_id_transacao_pendente, v_tipo, v_descricao, v_valor
-    FROM TRANSACAO_PENDENTE
-    WHERE id_cliente = v_id_cliente
-    ORDER BY id
-    LIMIT 1;
+   	    SELECT id, tipo, descricao, valor
+	    INTO v_menor_id_transacao_pendente, v_tipo, v_descricao, v_valor
+	    FROM TRANSACAO_PENDENTE
+	    WHERE id_cliente = v_id_cliente
+	    ORDER BY id
+	    LIMIT 1;
+   
+   	IF NEW.em_processamento = false and v_menor_id_transacao_pendente is not null THEN
+	    -- Pesquisar o menor ID na tabela TRANSACAO_PENDENTE para o mesmo id_cliente
 
-    -- Executar a função processar_transacao com as informações adquiridas
-    PERFORM processar_transacao(v_id_cliente, v_tipo, v_valor, v_descricao, v_menor_id_transacao_pendente);
-
-    -- Aqui você pode adicionar lógica adicional conforme necessário
-    -- Exemplo: realizar alguma ação com os valores encontrados
-
+	
+	   	delete from TRANSACAO_PENDENTE where id = v_menor_id_transacao_pendente;
+	   	update processando set em_processamento = true where id_cliente = v_id_cliente;
+	    -- Executar a função processar_transacao com as informações adquiridas
+	   PERFORM processar_transacao(v_id_cliente, v_tipo, v_valor, v_descricao, v_menor_id_transacao_pendente);
+	END if;
+	   
     RETURN NEW;
+    
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger para ativar após UPDATE na tabela PROCESSANDO
-CREATE TRIGGER processando_trigger
+CREATE trigger  processando_trigger
 AFTER UPDATE ON PROCESSANDO
 FOR EACH ROW EXECUTE FUNCTION processar_transacao_pendente();
+
+CREATE OR REPLACE FUNCTION processar_transacao_pendente_insert()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_id_cliente INTEGER;
+    v_menor_id_transacao_pendente INTEGER;
+    v_tipo VARCHAR(1);
+    v_descricao VARCHAR(10);
+    v_valor INTEGER;
+	v_id_trancacao integer;
+	v_em_processamento boolean;
+BEGIN
+    -- Obter o id_cliente da tabela PROCESSANDO
+    v_id_cliente := NEW.id_cliente;
+   
+   select em_processamento into v_em_processamento from processando where id_cliente = v_id_cliente;
+
+  		SELECT id, tipo, descricao, valor
+	    INTO v_menor_id_transacao_pendente, v_tipo, v_descricao, v_valor
+	    FROM TRANSACAO_PENDENTE
+	    WHERE id_cliente = v_id_cliente
+	    ORDER BY id
+	    LIMIT 1;
+  
+   	IF v_em_processamento = false and v_menor_id_transacao_pendente is not null THEN
+	    -- Pesquisar o menor ID na tabela TRANSACAO_PENDENTE para o mesmo id_cliente
+	    SELECT id, tipo, descricao, valor
+	    INTO v_menor_id_transacao_pendente, v_tipo, v_descricao, v_valor
+	    FROM TRANSACAO_PENDENTE
+	    WHERE id_cliente = v_id_cliente
+	    ORDER BY id
+	    LIMIT 1;
+	
+	   	delete from TRANSACAO_PENDENTE where id = v_menor_id_transacao_pendente;
+	   	update processando set em_processamento = true where id_cliente = v_id_cliente;
+	    -- Executar a função processar_transacao com as informações adquiridas
+	   PERFORM processar_transacao(v_id_cliente, v_tipo, v_valor, v_descricao, v_menor_id_transacao_pendente);
+	END if;
+	   
+    RETURN NEW;
+    
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE trigger  processando_trigger_insert_transacao_pendente
+AFTER INSERT ON transacao_pendente
+FOR EACH ROW EXECUTE FUNCTION processar_transacao_pendente_insert();
