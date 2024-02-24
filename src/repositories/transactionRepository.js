@@ -1,31 +1,8 @@
+import memoryCache from '../cache/memoryCache.js';
+import poolPostgres from '../database/pg.js';
+import CustomError from '../utils/customError.js';
+
 export default class TransactionRepository {
-  async selectUser({ client, id }) {
-    await client.query('BEGIN TRANSACTION');
-
-    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
-
-    const { rows } = await client.query(
-      `SELECT * FROM USUARIO WHERE id_cliente = ${id} FOR UPDATE;`,
-    );
-
-    return rows[0];
-  }
-
-  async updateBalance({ client, id, newBalance }) {
-    return client.query(
-      `UPDATE USUARIO SET saldo = ${newBalance} WHERE id_cliente = ${id};`,
-    );
-  }
-
-  async insertTransaction({ client, id, valor, tipo, descricao }) {
-    // Send to a queue for further processing ???
-    await client.query(
-      `INSERT INTO TRANSACAO (tipo, descricao, valor, id_cliente) VALUES ('${tipo}', '${descricao}', ${valor}, ${id});`,
-    );
-
-    return client.query('COMMIT');
-  }
-
   async listBankStatement({ client, id }) {
     const { rows } = await client.query(`
         SELECT
@@ -43,14 +20,82 @@ export default class TransactionRepository {
     return rows;
   }
 
-  // Do not used
-  async findUser({ client, id }) {
+  async addCreditTransaction({ id_cliente, value, description, limit }) {
+    const client = await poolPostgres.connect();
+    
+    try {
+      const { rows } = await client.query(
+        `SELECT * FROM ADD_CREDIT_TRANSACTION($1, $2, $3)`,
+        [id_cliente, value, description],
+      );
+
+      client.release();
+
+      if (rows[0].saldo_att === null) {
+        throw new CustomError(422, 'Operation not completed');
+      }
+
+      return {
+        saldo: rows[0].saldo_att,
+        limite: limit,
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+
+      throw new CustomError(error.statusCode, error.message);
+    }
+  }
+
+  async addDebitTransaction({ id_cliente, value, description, limit }) {
+    const client = await poolPostgres.connect();
+
+    try {
+      const { rows } = await client.query(
+        `SELECT * FROM ADD_DEBIT_TRANSACTION(CAST($1 AS SMALLINT), $2, $3)`,
+        [id_cliente, value, description],
+      );
+
+      client.release();
+
+      console.log('#### 000', { rows });
+
+      throw new CustomError(422, 'Operation not completed');
+
+      if (rows[0].saldo_att === null) {
+        throw new CustomError(422, 'Operation not completed');
+      }
+
+      return {
+        saldo: rows[0].saldo_att,
+        limite: limit,
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+
+      throw new CustomError(error.statusCode, error.message);
+    }
+  }
+}
+
+export async function listUsers() {
+  const client = await poolPostgres.connect();
+
+  try {
     const { rows } = await client.query(
-      `SELECT * FROM USUARIO WHERE ID = '${id}'`,
+      'SELECT * FROM USUARIO ORDER BY id_cliente ASC',
     );
 
-    return {
-      exist: rows[0].id_cliente ?? false,
-    };
+    const clients = rows.map((row) => ({
+      id_cliente: row.id_cliente,
+      limite: row.limite,
+    }));
+
+    memoryCache.put('clients', clients);
+
+    return client.release();
+  } catch (error) {
+    await client.query('ROLLBACK');
+
+    throw new CustomError(error.statusCode, error.message);
   }
 }

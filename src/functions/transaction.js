@@ -1,30 +1,34 @@
+import memoryCache from '../cache/memoryCache.js';
 import poolPostgres from '../database/pg.js';
 import CustomError from '../utils/customError.js';
 
 const transactionsAllow = ['c', 'd'];
-const clients = [1, 2, 3, 4, 5];
 
 export default class Transaction {
   constructor(repository) {
     this.repository = repository;
   }
 
-  async create({ id, valor, tipo, descricao }) {
-    const client = await poolPostgres.connect();
-
+  async create({ id, valor, tipo, descricao: description }) {
     try {
-      // const { exist } = await this.repository.findUser(id);
-
-      // if (!exist) {
-      //   throw new Error('User not found');
-      // }
-
-      if ([id, valor, tipo, descricao].some((value) => !value)) {
+      if ([id, valor, tipo, description].some((value) => !value)) {
         throw new CustomError(400, 'All params is required');
       }
 
       const clientId = Number(id);
       const value = Number(valor);
+
+      if (
+        !memoryCache
+          .get('clients')
+          .find(({ id_cliente }) => id_cliente === clientId)
+      ) {
+        throw new CustomError(404, 'User not found');
+      }
+
+      const { limite: limitClient } = memoryCache
+        .get('clients')
+        .find(({ id_cliente }) => id_cliente === clientId);
 
       if (Number.isNaN(clientId)) {
         throw new CustomError(400, 'Type of id is invalid');
@@ -38,12 +42,12 @@ export default class Transaction {
         throw new CustomError(400, 'Input of valor is invalid');
       }
 
-      if ([tipo, descricao].some((value) => typeof value !== 'string')) {
-        throw new CustomError(400, 'Type of tipo or descricao is invalid');
+      if (description.length > 10) {
+        throw new CustomError(400, 'Descricao is too big');
       }
 
-      if (!clients.includes(clientId)) {
-        throw new CustomError(404, 'User not found');
+      if ([tipo, description].some((value) => typeof value !== 'string')) {
+        throw new CustomError(400, 'Type of tipo or descricao is invalid');
       }
 
       if (!transactionsAllow.includes(tipo)) {
@@ -52,59 +56,33 @@ export default class Transaction {
 
       // Credit operation
       if (tipo === 'c') {
-        const user = await this.repository.selectUser({ client, id: clientId });
-
-        const newBalance = user.saldo + value;
-
-        await this.repository.updateBalance({
-          client,
-          id: clientId,
-          newBalance,
-        });
-
-        await this.repository.insertTransaction({
-          client,
-          id: clientId,
-          valor: value,
-          tipo,
-          descricao,
+        const { saldo, limite } = await this.repository.addCreditTransaction({
+          id_cliente: clientId,
+          value,
+          description,
+          limit: limitClient,
         });
 
         return {
-          limite: user.limite,
-          saldo: newBalance,
+          saldo: saldo,
+          limite: limite,
         };
       }
 
       // Debit operation
-      const user = await this.repository.selectUser({ client, id: clientId });
-
-      const newBalance = user.saldo - value;
-
-      if (user.limite + newBalance < 0) {
-        throw new CustomError(422, 'This operation is not allow');
-      }
-
-      await this.repository.updateBalance({ client, id: clientId, newBalance });
-
-      await this.repository.insertTransaction({
-        client,
-        id: clientId,
-        valor: value,
-        tipo,
-        descricao,
+      const { saldo, limite } = await this.repository.addDebitTransaction({
+        id_cliente: clientId,
+        value,
+        description,
+        limit: limitClient,
       });
 
       return {
-        limite: user.limite,
-        saldo: newBalance,
+        saldo: saldo,
+        limite: limite,
       };
     } catch (error) {
-      await client.query('ROLLBACK');
-
       throw new CustomError(error.statusCode, error.message);
-    } finally {
-      client.release();
     }
   }
 
@@ -118,8 +96,11 @@ export default class Transaction {
         throw new CustomError(400, 'Type of id is invalid');
       }
 
-      // To improve this, do you need to check at the bank? If yes, so as not to need to verify the client first
-      if (!clients.includes(clientId)) {
+      if (
+        !memoryCache
+          .get('clients')
+          .find(({ id_cliente }) => id_cliente === clientId)
+      ) {
         throw new CustomError(404, 'User not found');
       }
 

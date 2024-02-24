@@ -9,14 +9,19 @@
     "test:verbose": "vitest run --reporter=verbose",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "dev": "docker compose -f docker-compose-local.yml down && docker compose -f docker-compose-local.yml up -d --build && node --env-file .env --watch ./src/server.js",
+    "dev:db": "docker compose -f docker-compose-local.yml down && docker compose -f docker-compose-local.yml up -d --build && node --env-file .env --watch ./src/cluster.js",
+    "dev": "node --env-file .env --watch --trace-warnings ./src/cluster.js",
     "start": "node ./src/cluster.js"
+  },
+  "engines": {
+    "node": ">= 20.11.1"
   },
   "keywords": [],
   "author": "CGB Group",
   "license": "ISC",
   "dependencies": {
     "hyper-express": "^6.14.12",
+    "memory-cache": "^0.2.0",
     "pg": "^8.11.3"
   },
   "devDependencies": {

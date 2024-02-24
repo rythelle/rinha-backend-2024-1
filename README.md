@@ -26,14 +26,12 @@
 
 ## Como rodar
 
-### Levantar
+### Derrubar aplicação
+- docker compose down
 
+### Levantar
 - docker compose up -d --build
 - Aplicação fica disponível em http://localhost:9999/
-
-### Derrubar aplicação
-
-- docker compose down
 
 ## Como rodar teste de carga
 - Na raiz do projeto, execute:
