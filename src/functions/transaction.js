@@ -4,14 +4,18 @@ import CustomError from '../utils/customError.js';
 const transactionsAllow = ['c', 'd'];
 const clients = [1, 2, 3, 4, 5];
 
+function gerarArrayComMilNumeros() {
+  return Array.from({ length: 999999 }, (_, index) => index + 1);
+}
+
 export default class Transaction {
   constructor(repository) {
     this.repository = repository;
   }
 
   async create({ id, valor, tipo, descricao }) {
+    console.log("inicio do create em transaction");
     const client = await poolPostgres.connect();
-
     try {
       // const { exist } = await this.repository.findUser(id);
 
@@ -50,54 +54,57 @@ export default class Transaction {
         throw new CustomError(400, 'Type of operation not allow');
       }
 
-      // Credit operation
-      if (tipo === 'c') {
-        const user = await this.repository.selectUser({ client, id: clientId });
+// TODO: implementar aqui
 
-        const newBalance = user.saldo + value;
+    console.log("Depois das validações");
 
-        await this.repository.updateBalance({
-          client,
-          id: clientId,
-          newBalance,
-        });
 
-        await this.repository.insertTransaction({
-          client,
-          id: clientId,
-          valor: value,
-          tipo,
-          descricao,
-        });
-
-        return {
-          limite: user.limite,
-          saldo: newBalance,
-        };
-      }
-
-      // Debit operation
-      const user = await this.repository.selectUser({ client, id: clientId });
-
-      const newBalance = user.saldo - value;
-
-      if (user.limite + newBalance < 0) {
-        throw new CustomError(422, 'This operation is not allow');
-      }
-
-      await this.repository.updateBalance({ client, id: clientId, newBalance });
-
-      await this.repository.insertTransaction({
+      const resultId = await this.repository.createTransaction({
         client,
         id: clientId,
         valor: value,
         tipo,
         descricao,
-      });
+      }) 
+
+      console.log("olha o resultId aqui do createTransaction", resultId)
+
+      // const resultado = await this.repository.verifyTransaction({
+      //   client,
+      //   id: resultId
+      // }) //! { id: 6, informacao: '200' }
+
+      // const resultadoNotFound = await this.repository.verifyTransaction({
+      //   client,
+      //   id: 855
+      // }) //! undefined 
+
+      // console.log("resultado notFound:", resultadoNotFound) 
+      let resultado = undefined;
+
+      // TODO: Queria um do While, mas precisa aceitar assincrono
+      console.log("começo do for")
+      for await (const num of gerarArrayComMilNumeros()) {
+        resultado = await this.repository.verifyTransaction({
+          client,
+          id: resultId
+        }) 
+        if (resultado) {
+        break; 
+        }
+      }
+      console.log("final do for");
+
+
+      if (resultado.informacao === '422') {
+        throw new CustomError(422, 'This operation is not allow');
+      }
+      
+      const user = await this.repository.selectUser({ client, id: clientId });
 
       return {
         limite: user.limite,
-        saldo: newBalance,
+        saldo: user.saldo,
       };
     } catch (error) {
       await client.query('ROLLBACK');

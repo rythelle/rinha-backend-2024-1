@@ -9,6 +9,7 @@ const transaction = new Transaction(repository);
 
 router.post('/clientes/:id/transacoes', async (request, response) => {
   try {
+    console.log("inicio do endpoint")
     const { id } = request.path_parameters;
 
     const body = await request.json();

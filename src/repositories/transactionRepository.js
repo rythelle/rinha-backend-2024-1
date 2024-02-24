@@ -1,4 +1,28 @@
 export default class TransactionRepository {
+
+  async createTransaction({ client, id, valor, tipo, descricao}){
+    console.log("inicio do createTransaction");
+  
+    const { rows } = await client.query(
+      'SELECT criar_transacao_pendente($1, $2, $3, $4) ;',
+      [tipo, descricao, valor, id],
+    );
+    
+
+    console.log("Final do createTransaction");
+
+    return rows[0].criar_transacao_pendente;
+  }
+
+  async verifyTransaction({ client, id }) {
+
+    const { rows } = await client.query(
+      `SELECT * FROM resultado WHERE id = ${id};`,
+    );
+
+    return rows[0];
+  }
+
   async selectUser({ client, id }) {
     await client.query('BEGIN TRANSACTION');
 
