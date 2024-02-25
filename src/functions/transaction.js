@@ -12,7 +12,7 @@ export default class Transaction {
   async create({ id, valor, tipo, descricao: description }) {
     try {
       if ([id, valor, tipo, description].some((value) => !value)) {
-        throw new CustomError(400, 'All params is required');
+        throw new CustomError(422, 'All params is required');
       }
 
       const clientId = Number(id);
@@ -42,8 +42,8 @@ export default class Transaction {
         throw new CustomError(400, 'Input of valor is invalid');
       }
 
-      if (description.length > 10) {
-        throw new CustomError(400, 'Descricao is too big');
+      if (!description || description.length <= 0 || description.length > 10) {
+        throw new CustomError(422, 'Descricao is invalid');
       }
 
       if ([tipo, description].some((value) => typeof value !== 'string')) {
@@ -51,7 +51,7 @@ export default class Transaction {
       }
 
       if (!transactionsAllow.includes(tipo)) {
-        throw new CustomError(400, 'Type of operation not allow');
+        throw new CustomError(422, 'Type of operation not allow');
       }
 
       // Credit operation
@@ -105,22 +105,21 @@ export default class Transaction {
       }
 
       const userTransactions = await this.repository.listBankStatement({
-        client,
-        id: clientId,
+        id_cliente: clientId,
       });
 
       let transactions = [];
 
       if (userTransactions.length > 0) {
         transactions = userTransactions.map(
-          ({ valor, tipo, descricao, realizada_em }) => {
+          ({ realizada_em, tipo, descricao, valor }) => {
             if (!valor || !tipo || !descricao || !realizada_em) return;
 
             return {
-              valor: valor ?? valor,
-              tipo: tipo ?? tipo,
-              descricao: descricao ?? descricao,
-              realizada_em: realizada_em ?? realizada_em,
+              valor: valor,
+              tipo: tipo,
+              descricao: descricao,
+              realizada_em: realizada_em,
             };
           },
         );

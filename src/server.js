@@ -17,7 +17,7 @@ server.use('/', router);
 await listUsers();
 
 server
-  .listen(3333)
+  .listen(Number(process.env.API_PORT))
   .then((socket) => console.log('[Server] - Server started on port 80', socket))
   .catch((error) =>
     console.log('[Server] - Failed to start server on port 80', error),

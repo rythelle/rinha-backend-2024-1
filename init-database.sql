@@ -1,6 +1,6 @@
 CREATE UNLOGGED TABLE TRANSACAO (
     "id" SERIAL PRIMARY KEY,
-    "realizada_em" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    "realizada_em" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     "tipo" VARCHAR(1) NOT NULL,
     "descricao" VARCHAR(10) NOT NULL,
     "valor" INTEGER NOT NULL,
@@ -30,44 +30,75 @@ BEGIN
 END $$;
 
 CREATE OR REPLACE FUNCTION ADD_CREDIT_TRANSACTION(
-    CLIENT_ID INT, 
-    VALOR INTEGER, 
-    DESCRICAO VARCHAR(10), 
-    OUT SALDO_ATT INT
+    FC_CLIENT_ID INTEGER, 
+    FC_VALOR INTEGER, 
+    FC_DESCRICAO VARCHAR(10), 
+    OUT FC_SALDO_ATT INTEGER
 )
 AS $$
 BEGIN
     INSERT INTO TRANSACAO (tipo, descricao, valor, id_cliente) 
-    VALUES ('c', DESCRICAO, VALOR, CLIENT_ID);
+    VALUES ('c', FC_DESCRICAO, FC_VALOR, FC_CLIENT_ID);
 
-    PERFORM pg_advisory_xact_lock(CLIENT_ID);
+    PERFORM pg_advisory_xact_lock(FC_CLIENT_ID);
 
     UPDATE USUARIO 
-    SET saldo = saldo + VALOR 
-    WHERE USUARIO.id_cliente = CLIENT_ID
-    RETURNING saldo INTO SALDO_ATT;
+    SET saldo = saldo + FC_VALOR 
+    WHERE id_cliente = FC_CLIENT_ID
+    RETURNING saldo INTO FC_SALDO_ATT;
 END $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION ADD_DEBIT_TRANSACTION(
-    CLIENT_ID INT, 
-    VALOR INTEGER, 
-    DESCRICAO VARCHAR(10),
-    LIMITE INT,
-    OUT SALDO_ATT INT
+    FC_CLIENT_ID INTEGER, 
+    FC_VALOR INTEGER, 
+    FC_DESCRICAO VARCHAR(10),
+    FC_LIMITE INTEGER,
+    OUT FC_SALDO_ATT INTEGER
 )
 AS $$
 BEGIN
-    PERFORM pg_advisory_xact_lock(CLIENT_ID);
+    PERFORM pg_advisory_xact_lock(FC_CLIENT_ID);
 
-    UPDATE USUARIO 
-    SET USUARIO.saldo = USUARIO.saldo - VALOR 
-    WHERE USUARIO.id_cliente = CLIENT_ID AND LIMITE + (USUARIO.saldo - VALOR) >= 0
-    RETURNING saldo INTO SALDO_ATT;
+    UPDATE USUARIO
+    SET saldo = saldo - FC_VALOR 
+    WHERE id_cliente = FC_CLIENT_ID AND FC_LIMITE + (saldo - FC_VALOR) >= 0
+    RETURNING saldo INTO FC_SALDO_ATT;
 
-    IF SALDO_ATT IS NULL THEN
+    IF FC_SALDO_ATT IS NULL THEN
         RETURN;
     END IF;
 
     INSERT INTO TRANSACAO (tipo, descricao, valor, id_cliente) 
-    VALUES ('d', DESCRICAO, VALOR, CLIENT_ID);
+    VALUES ('d', FC_DESCRICAO, FC_VALOR, FC_CLIENT_ID);
+END $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION LIST_BANK_STATEMENT(
+    FC_CLIENT_ID INTEGER
+)
+RETURNS TABLE (
+    id_cliente INTEGER,
+    limite INTEGER,
+    saldo INTEGER,
+    realizada_em TIMESTAMP WITH TIME ZONE,
+    tipo VARCHAR,
+    descricao VARCHAR,
+    valor INTEGER
+) AS $$
+BEGIN
+    PERFORM pg_advisory_xact_lock(FC_CLIENT_ID);
+
+    RETURN QUERY
+    SELECT
+        u."id_cliente",
+        u."limite",
+        u."saldo",
+        t."realizada_em",
+        t."tipo",
+        t."descricao",
+        t."valor"
+    FROM USUARIO u
+    LEFT JOIN TRANSACAO t ON t.id_cliente = u.id_cliente
+    WHERE u.id_cliente = FC_CLIENT_ID
+    ORDER BY t.realizada_em DESC
+    LIMIT 10;
 END $$ LANGUAGE plpgsql;

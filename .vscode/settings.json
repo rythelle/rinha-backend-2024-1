@@ -12,6 +12,7 @@
         "tipo",
         "TRANSACAO",
         "transacoes",
+        "UNLOGGED",
         "USUARIO",
         "xact"
     ]
