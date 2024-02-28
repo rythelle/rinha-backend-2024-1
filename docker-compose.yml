@@ -27,8 +27,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.1'
-          memory: '80MB'
+          cpus: '0.175'
+          memory: '125MB'
 
   api2:
     build:
@@ -56,8 +56,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.1'
-          memory: '80MB'
+          cpus: '0.175'
+          memory: '125MB'
 
   nginx:
     image: nginx:latest
@@ -72,8 +72,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.95'
-          memory: '130MB'
+          cpus: '0.6'
+          memory: '30MB'
 
   db:
     image: postgres:latest
@@ -97,9 +97,10 @@ services:
       POSTGRES_DB: db_cake
     volumes:
       - ./init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
-    command: postgres -c 'max_connections=6000'
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     deploy:
       resources:
         limits:
-          cpus: '0.35'
-          memory: '260MB'
+          cpus: '0.55'
+          memory: '270MB'

@@ -2,13 +2,13 @@
 
 ![Imagem da rinha](https://raw.githubusercontent.com/zanfranceschi/rinha-de-backend-2024-q1/main/misc/arte.jpg)
 
-### Ideias
+## Ideias
 
 - Pensei em usar o Hyper-Express, por causa desse artigo aqui:
   https://medium.com/deno-the-complete-reference/node-js-the-fastest-web-framework-in-2024-fa11e513fa75
   Vi que ele tem suporte pra coisas que precisamos (servidor HTTP e middleware)
 
-### To do
+## To do
 
 - [x] Implementação básica do Hyper-Express.
 - [x] Criar todas as rotas do desafio.
@@ -20,18 +20,18 @@
 - [x] Arrumar a infra para rodar a aplicação.
 - [x] Implementar cluster nodejs.
 - [x] Implementar cache ???.
-- [ ] Melhorar query do banco.
+- [x] Melhorar query do banco.
 - [ ] Otimizar aplicação.
 - [x] Configurar limites de memória e cpu.
 
-## Como rodar
-
-### Derrubar aplicação
-- docker compose down
+## Como rodar aplicação
 
 ### Levantar aplicação
 - docker compose up -d --build
 - Aplicação fica disponível em http://localhost:9999/
+
+### Derrubar aplicação
+- docker compose down
 
 ## Como rodar teste de carga
 - Na raiz do projeto, execute:
@@ -48,16 +48,15 @@
   --publish=8080:8080 \
   --detach=true \
   --name=cadvisor \
-  gcr.io/google-containers/cadvisor:latest
+  google/cadvisor:latest
 
-- Disponível em http://localhost:8080/containers
 - Disponível em http://localhost:8080/docker
 
 ## Repositório do desafio
 
 https://github.com/zanfranceschi/rinha-de-backend-2024-q1
 
-### Links
+## Links
 
 https://dzone.com/articles/how-to-install-gatling-on-ubuntu
 https://medium.com/@pierre.viara/install-java-on-windows-10-linux-subsystem-875f1f286ee8

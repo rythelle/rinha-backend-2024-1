@@ -1,7 +1,7 @@
 import cluster from 'cluster';
 
 const runPrimaryProcess = async () => {
-  const processesCount = 2;
+  const processesCount = 3;
 
   console.log(`[Cluster] - Primary ${process.pid} is running`);
   console.log(`[Cluster] - Forking Server with ${processesCount} processes`);
