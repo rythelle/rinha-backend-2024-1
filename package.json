@@ -21,6 +21,7 @@
   "author": "CGB Group",
   "license": "ISC",
   "dependencies": {
+    "bullmq": "^5.4.0",
     "hyper-express": "^6.14.12",
     "memory-cache": "^0.2.0",
     "pg": "^8.11.3"
