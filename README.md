@@ -2,37 +2,35 @@
 
 ![Imagem da rinha](https://raw.githubusercontent.com/zanfranceschi/rinha-de-backend-2024-q1/main/misc/arte.jpg)
 
-### Ideias
+## Ideias
 
 - Pensei em usar o Hyper-Express, por causa desse artigo aqui:
   https://medium.com/deno-the-complete-reference/node-js-the-fastest-web-framework-in-2024-fa11e513fa75
   Vi que ele tem suporte pra coisas que precisamos (servidor HTTP e middleware)
 
-### To do
+## To do
 
 - [x] Implementação básica do Hyper-Express.
 - [x] Criar todas as rotas do desafio.
 - [x] Montar schema do banco de dados.
 - [x] Definir qual banco de dados irá usar (Postregres ou MongoDB).
 - [x] Implementar regras de negócio do desafio (Service ou useCase).
-- [x] Implementar testes unitários (Falta um caso de teste, linha 124).
-- [ ] Adicionar manipulação de erros conforme o desafio.
+- [ ] Implementar testes unitários.
+- [x] Adicionar manipulação de erros conforme o desafio.
 - [x] Arrumar a infra para rodar a aplicação.
-- [ ] Implementar cluster nodejs.
-- [ ] Implementar cache ???.
-- [ ] Melhorar query do banco.
+- [x] Implementar cluster nodejs.
+- [x] Implementar cache ???.
+- [x] Melhorar query do banco.
 - [ ] Otimizar aplicação.
-- [ ] Configurar limites de memória e cpu.
+- [x] Configurar limites de memória e cpu.
 
-## Como rodar
+## Como rodar aplicação
 
-### Levantar
-
+### Levantar aplicação
 - docker compose up -d --build
 - Aplicação fica disponível em http://localhost:9999/
 
 ### Derrubar aplicação
-
 - docker compose down
 
 ## Como rodar teste de carga
@@ -40,11 +38,25 @@
 * Para Linux: ./executar-teste-local.sh
 * Para Windows ./executar-teste-local.ps1
 
+## Gráficos para análise dos containers
+- docker run \
+  --volume=/:/rootfs:ro \
+  --volume=/var/run:/var/run:ro \
+  --volume=/sys:/sys:ro \
+  --volume=/var/lib/docker/:/var/lib/docker:ro \
+  --volume=/dev/disk/:/dev/disk:ro \
+  --publish=8080:8080 \
+  --detach=true \
+  --name=cadvisor \
+  google/cadvisor:latest
+
+- Disponível em http://localhost:8080/docker
+
 ## Repositório do desafio
 
 https://github.com/zanfranceschi/rinha-de-backend-2024-q1
 
-### Links
+## Links
 
 https://dzone.com/articles/how-to-install-gatling-on-ubuntu
 https://medium.com/@pierre.viara/install-java-on-windows-10-linux-subsystem-875f1f286ee8
@@ -54,8 +66,3 @@ https://vitest.dev/guide/
 https://medium.com/thefreshwrites/advisory-locks-in-postgres-1f993647d061
 http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_http_version
 https://medium.com/@soulaimaneyh/nginx-internal-architecture-b94b013bc365
-
-
-## Run only app in docker
-- docker build -t api-rinha .
-- docker run api-rinha

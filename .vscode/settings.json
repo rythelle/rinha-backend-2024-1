@@ -1,14 +1,19 @@
 {
     "cSpell.words": [
+        "Cacheable",
         "cliente",
         "descricao",
         "extrato",
+        "FKEY",
         "limite",
+        "plpgsql",
         "realizada",
         "saldo",
         "tipo",
         "TRANSACAO",
         "transacoes",
-        "USUARIO"
+        "UNLOGGED",
+        "USUARIO",
+        "xact"
     ]
 }

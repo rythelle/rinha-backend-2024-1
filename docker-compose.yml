@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3.8'
 
 services:
   api1:
@@ -6,81 +6,62 @@ services:
       dockerfile: Dockerfile
       context: .
     image: api
+    network_mode: host
     hostname: api1
     restart: "on-failure"
-    # healthcheck:
-    #   test: ["CMD-SHELL", "curl", "-f", "http://localhost:3002/healthy-check"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 10
     depends_on:
       db:
         condition: service_healthy
-      # redis:
-      #   condition: service_healthy
     expose:
-      - '80'
-    # volumes:
-    #   - .:/usr/src/app
+      - '9090'
     links:
       - db
-      # - redis
     environment:
-      POSTGRES_HOST: db
+      API_PORT: 9090
+      POSTGRES_HOST: localhost
       POSTGRES_DB: db_cake
       POSTGRES_USER: cake
       POSTGRES_PASSWORD: cake123
       POSTGRES_PORT: 5432
-      # REDIS_HOST: redis
-      # REDIS_PORT: 6379
     command: npm run start
     deploy:
       resources:
         limits:
-          cpus: '0.1'
-          memory: '50MB'
+          cpus: '0.175'
+          memory: '125MB'
 
   api2:
     build:
       dockerfile: Dockerfile
       context: .
     image: api
-    hostname: api1
+    network_mode: host
+    hostname: api2
     restart: "on-failure"
-    # healthcheck:
-    #   test: ["CMD-SHELL", "curl", "-f", "http://localhost:3003/healthy-check"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 10
     depends_on:
       db:
         condition: service_healthy
-      # redis:
-      #   condition: service_healthy
     expose:
-      - '80'
-    # volumes:
-    #   - .:/usr/src/app
+      - '9091'
     links:
       - db
-      # - redis
     environment:
-      POSTGRES_HOST: db
+      API_PORT: 9091
+      POSTGRES_HOST: localhost
       POSTGRES_USER: cake
       POSTGRES_PASSWORD: cake123
       POSTGRES_DB: db_cake
       POSTGRES_PORT: 5432
-      # REDIS_HOST: redis
-      # REDIS_PORT: 6379
     command: npm run start
     deploy:
       resources:
         limits:
-          cpus: '0.1'
-          memory: '50MB'
+          cpus: '0.175'
+          memory: '125MB'
 
   nginx:
     image: nginx:latest
+    network_mode: host
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -92,29 +73,14 @@ services:
       resources:
         limits:
           cpus: '0.6'
-          memory: '100MB'
-
-  # redis:
-  #   image: redis:latest
-  #   ports:
-  #     - '6379:6379'
-  #   healthcheck:
-  #     test: [ "CMD", "redis-cli", "ping" ]
-  #     interval: 3s
-  #     timeout: 5s
-  #     retries: 10
-  #   volumes:
-  #     - redis:/data
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '0.05'
-  #         memory: '0.2GB'
+          memory: '30MB'
 
   db:
-    image: 'postgres:latest'
+    image: postgres:latest
     ports:
       - '5432:5432'
+    network_mode: host
+    hostname: db
     restart: "on-failure"
     healthcheck:
       test:
@@ -131,13 +97,10 @@ services:
       POSTGRES_DB: db_cake
     volumes:
       - ./init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
-    command: postgres -c 'max_connections=6000'
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     deploy:
       resources:
         limits:
-          cpus: '0.7'
-          memory: '300MB'
-
-# volumes:
-#   redis:
-#     driver: local
+          cpus: '0.55'
+          memory: '270MB'

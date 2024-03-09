@@ -1,56 +1,93 @@
-export default class TransactionRepository {
-  async selectUser({ client, id }) {
-    await client.query('BEGIN TRANSACTION');
+import memoryCache from '../cache/memoryCache.js';
+import poolPostgres from '../database/pg.js';
+import CustomError from '../utils/customError.js';
 
-    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+export default class TransactionRepository {
+  async listBankStatement({ id_cliente }) {
+    const client = await poolPostgres.connect();
 
     const { rows } = await client.query(
-      `SELECT * FROM USUARIO WHERE id_cliente = ${id} FOR UPDATE;`,
+      `SELECT * FROM LIST_BANK_STATEMENT($1)`,
+      [id_cliente],
     );
 
-    return rows[0];
-  }
-
-  async updateBalance({ client, id, newBalance }) {
-    return client.query(
-      `UPDATE USUARIO SET saldo = ${newBalance} WHERE id_cliente = ${id};`,
-    );
-  }
-
-  async insertTransaction({ client, id, valor, tipo, descricao }) {
-    // Send to a queue for further processing ???
-    await client.query(
-      `INSERT INTO TRANSACAO (tipo, descricao, valor, id_cliente) VALUES ('${tipo}', '${descricao}', ${valor}, ${id});`,
-    );
-
-    return client.query('COMMIT');
-  }
-
-  async listBankStatement({ client, id }) {
-    const { rows } = await client.query(`
-        SELECT
-          u."id_cliente",
-          u."limite",
-          u."saldo",
-          t.*
-        FROM USUARIO u
-        LEFT JOIN TRANSACAO t ON t.id_cliente = u.id_cliente
-        WHERE u.id_cliente = ${id}
-        ORDER BY CASE WHEN t.realizada_em IS NULL THEN 1 ELSE 0 END, t.realizada_em DESC
-        LIMIT 10;
-      `);
+    client.release();
 
     return rows;
   }
 
-  // Do not used
-  async findUser({ client, id }) {
+  async addCreditTransaction({ id_cliente, value, description, limit }) {
+    const client = await poolPostgres.connect();
+
+    try {
+      const { rows } = await client.query(
+        `SELECT * FROM ADD_CREDIT_TRANSACTION($1, $2, $3)`,
+        [id_cliente, value, description],
+      );
+
+      client.release();
+
+      if (rows[0].fc_saldo_att === null) {
+        throw new CustomError(422, 'Operation not completed');
+      }
+
+      return {
+        saldo: rows[0].fc_saldo_att,
+        limite: limit,
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+
+      throw new CustomError(error.statusCode, error.message);
+    }
+  }
+
+  async addDebitTransaction({ id_cliente, value, description, limit }) {
+    const client = await poolPostgres.connect();
+
+    try {
+      const { rows } = await client.query(
+        `SELECT * FROM ADD_DEBIT_TRANSACTION($1, $2, $3, $4)`,
+        [id_cliente, value, description, limit],
+      );
+
+      client.release();
+
+      if (rows[0].fc_saldo_att === null) {
+        throw new CustomError(422, 'Operation not completed');
+      }
+
+      return {
+        saldo: rows[0].fc_saldo_att,
+        limite: limit,
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+
+      throw new CustomError(error.statusCode, error.message);
+    }
+  }
+}
+
+export async function listUsers() {
+  const client = await poolPostgres.connect();
+
+  try {
     const { rows } = await client.query(
-      `SELECT * FROM USUARIO WHERE ID = '${id}'`,
+      'SELECT * FROM USUARIO ORDER BY id_cliente ASC',
     );
 
-    return {
-      exist: rows[0].id_cliente ?? false,
-    };
+    const clients = rows.map((row) => ({
+      id_cliente: row.id_cliente,
+      limite: row.limite,
+    }));
+
+    memoryCache.put('clients', clients);
+
+    return client.release();
+  } catch (error) {
+    await client.query('ROLLBACK');
+
+    throw new CustomError(error.statusCode, error.message);
   }
 }
