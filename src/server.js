@@ -1,5 +1,4 @@
 import HyperExpress from 'hyper-express';
-// import logger from './middlewares/logger.js';
 import router from './router.js';
 import poolPostgres from './database/pg.js';
 import { listUsers } from './repositories/transactionRepository.js';
@@ -9,9 +8,6 @@ const server = new HyperExpress.Server({ trust_proxy: true });
 
 // Router
 server.use('/', router);
-
-// Middleware
-// server.use(logger);
 
 // Save in memory cache list of clients with your limit bank
 await listUsers();

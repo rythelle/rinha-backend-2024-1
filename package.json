@@ -5,14 +5,11 @@
   "description": "CGB Group for rinha-backend-2024-1",
   "main": "./src/cluster.js",
   "scripts": {
-    "test": "vitest run",
-    "test:verbose": "vitest run --reporter=verbose",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "dev:db": "docker compose -f docker-compose-local.yml down && docker compose -f docker-compose-local.yml up -d --build && node --env-file .env --watch ./src/cluster.js",
+    "dev:db": "docker compose down && docker compose up -d --build",
     "dev": "node --env-file .env --watch --trace-warnings ./src/cluster.js",
     "start": "node ./src/cluster.js",
-    "load-test:start": "docker compose down && docker compose up -d --build && ./executar-teste-local.sh"
+    "load-test:start": "docker compose down && docker compose up -d --build && ./executar-teste-local.sh",
+    "load-test:start:local": "docker compose -f docker-compose-local.yml down && docker compose -f docker-compose-local.yml up -d --build && ./executar-teste-local.sh"
   },
   "engines": {
     "node": ">= 20.11.1"
@@ -24,9 +21,5 @@
     "hyper-express": "^6.14.12",
     "memory-cache": "^0.2.0",
     "pg": "^8.11.3"
-  },
-  "devDependencies": {
-    "@vitest/coverage-v8": "^1.3.1",
-    "vitest": "^1.3.1"
   }
 }

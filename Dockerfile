@@ -11,6 +11,4 @@ RUN apk add --no-cache libc6-compat
 
 COPY . .
 
-# EXPOSE 3000
-
-# CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start"]
