@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   api1:
-    image: redvelvetdev/cgb-rinha-nodejs-q1-2024:1.1
+    image: redvelvetdev/cgb-rinha-nodejs-q1-2024:1.2
     network_mode: host
     hostname: api1
     restart: "on-failure"
@@ -27,7 +27,7 @@ services:
           memory: '125MB'
 
   api2:
-    image: redvelvetdev/cgb-rinha-nodejs-q1-2024:1.1
+    image: redvelvetdev/cgb-rinha-nodejs-q1-2024:1.2
     network_mode: host
     hostname: api2
     restart: "on-failure"
